@@ -1,0 +1,19 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: sample-ai
+  labels:
+    app: sample-ai
+    app.kubernetes.io/component: sample-ai
+    app.kubernetes.io/instance: sample-ai
+    backstage.io/kubernetes-id: sample-ai
+  annotations:
+    openshift.io/host.generated: 'true'
+spec:
+  to:
+    kind: Service
+    name: sample-ai
+    weight: 100
+  port:
+    targetPort: http
+  wildcardPolicy: None

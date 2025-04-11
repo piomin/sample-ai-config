@@ -1,0 +1,74 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: sample-ai
+spec:
+  params:
+    - default: master
+      description: The git revision
+      name: git-revision
+    - description: The git repository url
+      name: git-repo-url
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: sample-ai-run-
+        labels:
+          backstage.io/kubernetes-id: sample-ai
+      spec:
+        params:
+          - name: git-revision
+            value: $(tt.params.git-revision)
+        pipelineRef:
+          name: sample-ai
+        serviceAccountName: pipeline
+        workspaces:
+          - name: source-dir
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 1Gi
+          - name: sonar-settings
+            secret:
+              secretName: sonarqube-secret-token
+          - configMap:
+              name: maven-settings
+            name: maven_settings
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  name: sample-ai
+spec:
+  serviceAccountName: pipeline
+  triggers:
+    - bindings:
+        - kind: ClusterTriggerBinding
+          ref: github-push
+      name: trigger-1
+      template:
+        ref: sample-ai
+---
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: el-sample-ai
+  labels:
+    app.kubernetes.io/instance: cicd-config
+    app.kubernetes.io/managed-by: EventListener
+    app.kubernetes.io/part-of: Triggers
+    eventlistener: sample-ai
+  annotations:
+    openshift.io/host.generated: 'true'
+spec:
+  to:
+    kind: Service
+    name: el-sample-ai
+    weight: 100
+  port:
+    targetPort: http-listener
+  wildcardPolicy: None

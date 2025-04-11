@@ -1,0 +1,108 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: sample-ai
+  labels:
+    backstage.io/kubernetes-id: sample-ai
+spec:
+  params:
+    - description: branch
+      name: git-revision
+      type: string
+      default: master
+  tasks:
+    - name: git-clone
+      params:
+        - name: URL
+          value: 'https://github.com/piomin/sample-ai.git'
+        - name: REVISION
+          value: $(params.git-revision)
+        - name: SSL_VERIFY
+          value: 'false'
+      taskRef:
+        resolver: cluster
+        params:
+          - name: kind
+            value: task
+          - name: name
+            value: git-clone
+          - name: namespace
+            value: openshift-pipelines
+      workspaces:
+        - name: output
+          workspace: source-dir
+    - name: maven
+      params:
+        - name: GOALS
+          value:
+            - test
+      runAfter:
+        - git-clone
+      taskRef:
+        resolver: cluster
+        params:
+          - name: kind
+            value: task
+          - name: name
+            value: maven
+          - name: namespace
+            value: openshift-pipelines
+      workspaces:
+        - name: source
+          workspace: source-dir
+        - name: maven_settings
+          workspace: maven_settings
+    - name: sonarqube
+      params:
+        - name: SONAR_HOST_URL
+          value: 'https://sonarcloud.io'
+        - name: SONAR_PROJECT_KEY
+          value: piomin_sample-ai
+        - name: SONAR_ORGANIZATION
+          value: piomin
+      runAfter:
+        - maven
+      taskRef:
+        kind: Task
+        name: sonarqube-scanner
+      workspaces:
+        - name: source
+          workspace: source-dir
+        - name: sonar-settings
+          workspace: sonar-settings
+    - name: get-version
+      params:
+        - name: CONTEXT_DIR
+          value: .
+      runAfter:
+        - sonarqube
+      taskRef:
+        kind: Task
+        name: maven-get-project-version
+      workspaces:
+        - name: source
+          workspace: source-dir
+    - name: s2i-java
+      params:
+        - name: TLSVERIFY
+          value: 'false'
+        - name: IMAGE
+          value: image-registry.openshift-image-registry.svc:5000/demo/sample-ai:$(tasks.get-version.results.version)
+      runAfter:
+        - get-version
+      taskRef:
+        resolver: cluster
+        params:
+          - name: kind
+            value: task
+          - name: name
+            value: s2i-java
+          - name: namespace
+            value: openshift-pipelines
+      workspaces:
+        - name: source
+          workspace: source-dir
+  workspaces:
+    - name: source-dir
+    - name: maven_settings
+    - name: sonar-settings

@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-ai
+  labels:
+    app: sample-ai
+    backstage.io/kubernetes-id: sample-ai
+spec:
+  selector:
+    matchLabels:
+      app: sample-ai
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /actuator/prometheus
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+      labels:
+        app: sample-ai
+        backstage.io/kubernetes-id: sample-ai
+    spec:
+      containers:
+        - name: sample-ai
+          image: image-registry.openshift-image-registry.svc:5000/demo/sample-ai:1.0
+          ports:
+            - containerPort: 8080
+              name: http
+          livenessProbe:
+            httpGet:
+              port: 8080
+              path: /actuator/health/liveness
+              scheme: HTTP
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              port: 8080
+              path: /actuator/health/readiness
+              scheme: HTTP
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          resources:
+            limits:
+              memory: 1024Mi

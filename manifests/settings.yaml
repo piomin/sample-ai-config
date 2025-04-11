@@ -1,0 +1,28 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: maven-settings
+data:
+  settings.xml: >-
+    <?xml version="1.0" encoding="UTF-8"?>
+    <settings xmlns="http://maven.apache.org/SETTINGS/1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.1.0 http://maven.apache.org/xsd/settings-1.1.0.xsd">
+
+    </settings>
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  annotations:
+    sealedsecrets.bitnami.com/cluster-wide: "true"
+  creationTimestamp: null
+  name: sonarqube-secret-token
+spec:
+  encryptedData:
+    sonar-project.properties: AgBuHnCx11+TT+jZ5v5TPrYNMlBGSdGaQWtDzt8cbnVQbk9NfQY0fStNgLJSPPbA6wDOCtCexy1WXMYZDeyvepM2c9CeC/B6hbnWGoL9XqoMzYQMhwDkwJtB9hh+IQakQanxAXp7WH2Pid3cn/eQiJE5Y4pGb/+QilXyUk8IPPvLYjG2zAJX6hvZeQ4BFI8hBT8gi0Fnfe1lGLx2DKsbKUy+webatbZ0bMpt5ykMnXIk/uL1GvnXrdJhIA1HB8aQWAlvn+SsdhExNAar5CX+pSEWPCAxzR0iLzQqW45+70eXduKTczlE6ghrYP2B2rCpnyRA3MRJqKyNXqrEwyVm1FNm/jPk7kPRiuLn02sJ8JpasEsiYhAnEv9LeJE6rjypbZX3GEq9WP+ItUNmGl9XUzvZaJimTzncD/mgmeOEyUMfuZn5HsAVKY5ms0JheNd7TsRzQ7IB/NOfcUIyKmpz0niKcBegNtmEUOTZuiB2mamBT+c7zf96+6gu86JL6wlAkdYYQ4MSUdGofHeh3ujKXm5jHEiNz3dsytdOdRSY35DTU7wY5EzhizEQG0KdhBL/p7+Ezg+50KjZI0pkuMDGYe4WCbSwzQMikIEjJ42WWs2Kp8qgvB2pH1VYEAuCgC65THSVaiuVbuK7WRmY6lpzZhsbD6opCs3iSX8EOLicpdeqPsydW0gCI4ii62vHEM7qhvWsOIh7y6p8RwZQuU2iqBa4RydGgkaMt/yNcBkhrIkkSDeEod3UQPIDgUQROYfBRm2XnmlYjoswRqY9vvwyiFpU4kEOY57v4VvLeH2eeMrN+ikOyU0kgau2IMcYPZ5zcf/hzoORsRBlMalGc9OGUgtWzhVo2qkCnBTPgXs1lMJmHHIdloWGiw6bLLir8gHbQw==
+  template:
+    metadata:
+      annotations:
+        sealedsecrets.bitnami.com/cluster-wide: "true"
+      creationTimestamp: null
+      name: sonarqube-secret-token
+    type: Opaque

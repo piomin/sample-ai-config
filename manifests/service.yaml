@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: sample-ai
+  labels:
+    app: sample-ai
+    backstage.io/kubernetes-id: sample-ai
+spec:
+  type: ClusterIP
+  selector:
+    app: sample-ai
+  ports:
+    - port: 8080
+      protocol: TCP
+      name: http
